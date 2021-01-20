@@ -47,14 +47,6 @@ function boardRowColToXY(row, col) {
 	return lerp(start, end, colT);
 }
 
-class Monster {
-	field animation;
-
-	constructor(animation) {
-		this.animation = animation;
-	}
-}
-
 enum State
 	{ PLAYER_TURN
 	, TURN_TRANSITION
@@ -80,22 +72,6 @@ class MainScene : AbstractScene {
 			, new Card("Destroy all red monsters.")
 			, new Card("Destroy all green monsters.")
 			];
-		// Hard-code some initial monsters on the board.
-		this.board[0][-1] = new Monster(new Animation(
-			[ new Frame("images/cobra/g-1.png", 185, 196, 10)
-			, new Frame("images/cobra/g-2.png", 197, 194, 10)
-			]));
-		this.board[1][-1] = new Monster(new Animation(
-			[ new Frame("images/mummy/g-1.png", 234, 457, 25)
-			, new Frame("images/mummy/g-2.png", 234, 457, 25)
-			]));
-		this.board[2][-1] = new Monster(new Animation(
-			[ new Frame("images/scarab/g-1.png", 160, 356, 1)
-			, new Frame("images/scarab/g-3.png", 160, 356, 1)
-			, new Frame("images/scarab/g-5.png", 160, 356, 1)
-			, new Frame("images/scarab/g-2.png", 160, 356, 1)
-			, new Frame("images/scarab/g-4.png", 160, 356, 1)
-			]));
 	}
 
 	function update(inputManager, events) {
@@ -125,25 +101,10 @@ class MainScene : AbstractScene {
 							this.board[row][col] = this.board[row][col + 1];
 						}
 					}
-					for (row = 0; row < BOARD_ROW_COUNT; ++row) {
-						this.board[row][-1] = null;
+					// Spawn new monsters in the last column.
+					for (row : this.board) {
+						row[-1] = Monster.spawn();
 					}
-					// Spawn new monsters.
-					this.board[0][-1] = new Monster(new Animation(
-						[ new Frame("images/cobra/g-1.png", 185, 196, 10)
-						, new Frame("images/cobra/g-2.png", 197, 194, 10)
-						]));
-					this.board[1][-1] = new Monster(new Animation(
-						[ new Frame("images/mummy/g-1.png", 234, 457, 25)
-						, new Frame("images/mummy/g-2.png", 234, 457, 25)
-						]));
-					this.board[2][-1] = new Monster(new Animation(
-						[ new Frame("images/scarab/g-1.png", 160, 356, 1)
-						, new Frame("images/scarab/g-3.png", 160, 356, 1)
-						, new Frame("images/scarab/g-5.png", 160, 356, 1)
-						, new Frame("images/scarab/g-2.png", 160, 356, 1)
-						, new Frame("images/scarab/g-4.png", 160, 356, 1)
-						]));
 					// Switch back to player control.
 					this.state = State.PLAYER_TURN;
 				}

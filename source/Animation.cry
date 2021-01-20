@@ -1,4 +1,5 @@
 import Graphics2D;
+import Random;
 import TwoCansAlpha4;
 
 class Frame {
@@ -29,6 +30,15 @@ class Animation {
 
 	constructor(frames) {
 		this.frames = frames;
+		// Start the animation at a random point in its loop.
+		totalDuration = 0;
+		for (frame : this.frames) {
+			totalDuration += frame.duration;
+		}
+		iters = Random.randomInt(0, totalDuration);
+		for (i = 0; i < iters; ++i) {
+			this.update();
+		}
 	}
 
 	function update() {
