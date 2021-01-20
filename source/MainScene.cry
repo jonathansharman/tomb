@@ -1,3 +1,4 @@
+import Easing;
 import Graphics2D;
 import Graphics2DText;
 import Math;
@@ -18,6 +19,8 @@ const BOARD_BOTTOM_LEFT_X = 50;
 const BOARD_BOTTOM_LEFT_Y = 400;
 const BOARD_BOTTOM_RIGHT_X = 750;
 const BOARD_BOTTOM_RIGHT_Y = 400;
+
+const TURN_TRANSITION_DURATION = 20;
 
 function drawCentered(image, x, y) {
 	image.draw(x - 0.5 * image.width, y - 0.5 * image.height);
@@ -52,42 +55,100 @@ class Monster {
 	}
 }
 
+enum State
+	{ PLAYER_TURN
+	, TURN_TRANSITION
+	}
+
 class MainScene : AbstractScene {
+	field state = State.PLAYER_TURN;
+	field turnTransitionProgress;
+
 	field mousePos;
-	field cards;
 	field board;
-	field cobra;
-	field mummy;
-	field scarab;
+	field hand;
 
 	constructor() {
-		this.cards =
+		// Initialize board.
+		this.board = [];
+		for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+			this.board.add(BOARD_COL_COUNT * [null]);
+		}
+		// Initialize hand.
+		this.hand =
 			[ new Card("Destroy all cobras.")
 			, new Card("Destroy all red monsters.")
 			, new Card("Destroy all green monsters.")
 			];
-		this.cobra = new Animation(
+		// Hard-code some initial monsters on the board.
+		this.board[0][-1] = new Monster(new Animation(
 			[ new Frame("images/cobra/g-1.png", 185, 196, 10)
 			, new Frame("images/cobra/g-2.png", 197, 194, 10)
-			]);
-		this.mummy = new Animation(
+			]));
+		this.board[1][-1] = new Monster(new Animation(
 			[ new Frame("images/mummy/g-1.png", 234, 457, 25)
 			, new Frame("images/mummy/g-2.png", 234, 457, 25)
-			]);
-		this.scarab = new Animation(
+			]));
+		this.board[2][-1] = new Monster(new Animation(
 			[ new Frame("images/scarab/g-1.png", 160, 356, 1)
 			, new Frame("images/scarab/g-3.png", 160, 356, 1)
 			, new Frame("images/scarab/g-5.png", 160, 356, 1)
 			, new Frame("images/scarab/g-2.png", 160, 356, 1)
 			, new Frame("images/scarab/g-4.png", 160, 356, 1)
-			]);
+			]));
 	}
 
 	function update(inputManager, events) {
-		this.cobra.update();
-		this.mummy.update();
-		this.scarab.update();
-		this.mousePos = inputManager.getMousePosition();
+		// Update monsters.
+		for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+			for (col = 0; col < BOARD_COL_COUNT; ++col) {
+				monster = this.board[row][col];
+				if (monster != null) {
+					monster.animation.update();
+				}
+			}
+		}
+		switch (this.state) {
+			case State.PLAYER_TURN:
+				// Pass turn.
+				if (inputManager.isKeyPressedThisFrame(KeyboardKey.ENTER)) {
+					this.turnTransitionProgress = 0;
+					this.state = State.TURN_TRANSITION;
+				}
+				break;
+			case State.TURN_TRANSITION:
+				++this.turnTransitionProgress;
+				if (this.turnTransitionProgress == TURN_TRANSITION_DURATION) {
+					// Shuffle monsters to the left.
+					for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+						for (col = 0; col < BOARD_COL_COUNT - 1; ++col) {
+							this.board[row][col] = this.board[row][col + 1];
+						}
+					}
+					for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+						this.board[row][-1] = null;
+					}
+					// Spawn new monsters.
+					this.board[0][-1] = new Monster(new Animation(
+						[ new Frame("images/cobra/g-1.png", 185, 196, 10)
+						, new Frame("images/cobra/g-2.png", 197, 194, 10)
+						]));
+					this.board[1][-1] = new Monster(new Animation(
+						[ new Frame("images/mummy/g-1.png", 234, 457, 25)
+						, new Frame("images/mummy/g-2.png", 234, 457, 25)
+						]));
+					this.board[2][-1] = new Monster(new Animation(
+						[ new Frame("images/scarab/g-1.png", 160, 356, 1)
+						, new Frame("images/scarab/g-3.png", 160, 356, 1)
+						, new Frame("images/scarab/g-5.png", 160, 356, 1)
+						, new Frame("images/scarab/g-2.png", 160, 356, 1)
+						, new Frame("images/scarab/g-4.png", 160, 356, 1)
+						]));
+					// Switch back to player control.
+					this.state = State.PLAYER_TURN;
+				}
+				break;
+		}
 	}
 
 	function render() {
@@ -114,26 +175,25 @@ class MainScene : AbstractScene {
 				, 0, 0, 0
 				);
 		}
+		// Draw monsters.
+		easingValue = this.state == State.TURN_TRANSITION
+			? EasingFunction.LINEAR.ease(0.0, 1.0, this.turnTransitionProgress, TURN_TRANSITION_DURATION)
+			: 0.0
+			;
+		for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+			for (col = 0; col < BOARD_COL_COUNT; ++col) {
+				monster = this.board[row][col];
+				if (monster != null) {
+					pos = boardRowColToXY(row + 0.5, col + 0.5 - easingValue);
+					Graphics2D.Draw.ellipse(pos[0] - 18, pos[1] - 5, 36, 10, 0, 0, 0, 128);
+					monster.animation.draw(pos[0], pos[1], 0.1, 0.1);
+				}
+			}
+		}
 
-		pos = boardRowColToXY(0.5, 0.5);
-		Graphics2D.Draw.ellipse(pos[0] - 18, pos[1] - 5, 36, 10, 0, 0, 0, 128);
-		this.mummy.draw(pos[0], pos[1], 0.1, 0.1);
-
-		pos = boardRowColToXY(2.5, 2.5);
-		Graphics2D.Draw.ellipse(pos[0] - 35, pos[1] - 10, 70, 20, 0, 0, 0, 128);
-		this.mummy.draw(pos[0], pos[1], 0.2, 0.2);
-
-		pos = boardRowColToXY(1.5, 3.5);
-		Graphics2D.Draw.ellipse(pos[0] - 35, pos[1] - 10, 70, 20, 0, 0, 0, 128);
-		this.cobra.draw(pos[0], pos[1], 0.2, 0.2);
-
-		pos = boardRowColToXY(2.5, 5.5);
-		Graphics2D.Draw.ellipse(pos[0] - 35, pos[1] - 10, 70, 20, 0, 0, 0, 128);
-		this.scarab.draw(pos[0], pos[1], 0.2, 0.2);
-
-		// Draw cards.
-		for (i = 0; i < this.cards.length; ++i) {
-			this.cards[i].draw(10 + i * (CARD_WIDTH + 10), Y_RES - CARD_HEIGHT - 10);
+		// Draw hand.
+		for (i = 0; i < this.hand.length; ++i) {
+			this.hand[i].draw(10 + i * (CARD_WIDTH + 10), Y_RES - CARD_HEIGHT - 10);
 		}
 	}
 }
