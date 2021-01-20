@@ -1,0 +1,39 @@
+Hieroglyphos
+
+derived from Hieroglyphic
+
+by VÌt »ond·k
+2005-2014
+
+fonty.condak.cz
+
+En Cz Sk Pl
+
+History
+
+0.926	2014-02-06
+	* modified shape: JOvXZ frstvxz
+	+ AaEe-ogonek, Yy-circumflex, ≈ÂºæçŸ
+	+ Zdotaccent, Cc-dot, OoUu-hungarumlaut
+
+0.925	2014-02-02
+	* increased margins +25
+	* modified shape: 23589 BCEFHLMNRT jku
+	* decreased height of all glyphs -100
+
+0.922	2014-02-01
+	+ circumflex+...
+	* modified: !?HXijx
+
+0.921	2014-01-31
+	+ dieresis+...
+	* fixed spacing 50-50
+	* fixed directions etc.
+
+0.92	2003-08-17
+	+ a-uacute
+
+0.91
+
+0.90	2001-03-21
+	+ a-z

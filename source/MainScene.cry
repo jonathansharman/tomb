@@ -1,0 +1,139 @@
+import Graphics2D;
+import Graphics2DText;
+import Math;
+import Random;
+import TwoCansAlpha4;
+
+const X_RES = $var["screen_width"];
+const Y_RES = $var["screen_height"];
+
+const BOARD_LINE_WIDTH = 2.0;
+const BOARD_ROW_COUNT = 3;
+const BOARD_COL_COUNT = 8;
+const BOARD_TOP_LEFT_X = 125;
+const BOARD_TOP_LEFT_Y = 200;
+const BOARD_TOP_RIGHT_X = 675;
+const BOARD_TOP_RIGHT_Y = 200;
+const BOARD_BOTTOM_LEFT_X = 50;
+const BOARD_BOTTOM_LEFT_Y = 400;
+const BOARD_BOTTOM_RIGHT_X = 750;
+const BOARD_BOTTOM_RIGHT_Y = 400;
+
+function drawCentered(image, x, y) {
+	image.draw(x - 0.5 * image.width, y - 0.5 * image.height);
+}
+
+function lerp(p1, p2, t) {
+	return [p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1])];
+}
+
+// Maps board coordinates to screen coordinates.
+function boardRowColToXY(row, col) {
+	rowT = 1.0 * row / BOARD_ROW_COUNT;
+	start = lerp
+		( [BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y]
+		, [BOARD_BOTTOM_LEFT_X, BOARD_BOTTOM_LEFT_Y]
+		, rowT
+		);
+	end = lerp
+		( [BOARD_TOP_RIGHT_X, BOARD_TOP_RIGHT_Y]
+		, [BOARD_BOTTOM_RIGHT_X, BOARD_BOTTOM_RIGHT_Y]
+		, rowT
+		);
+	colT = 1.0 * col / BOARD_COL_COUNT;
+	return lerp(start, end, colT);
+}
+
+class Monster {
+	field animation;
+
+	constructor(animation) {
+		this.animation = animation;
+	}
+}
+
+class MainScene : AbstractScene {
+	field mousePos;
+	field cards;
+	field board;
+	field cobra;
+	field mummy;
+	field scarab;
+
+	constructor() {
+		this.cards =
+			[ new Card("Destroy all cobras.")
+			, new Card("Destroy all red monsters.")
+			, new Card("Destroy all green monsters.")
+			];
+		this.cobra = new Animation(
+			[ new Frame("images/cobra/g-1.png", 185, 196, 10)
+			, new Frame("images/cobra/g-2.png", 197, 194, 10)
+			]);
+		this.mummy = new Animation(
+			[ new Frame("images/mummy/g-1.png", 234, 457, 25)
+			, new Frame("images/mummy/g-2.png", 234, 457, 25)
+			]);
+		this.scarab = new Animation(
+			[ new Frame("images/scarab/g-1.png", 160, 356, 1)
+			, new Frame("images/scarab/g-3.png", 160, 356, 1)
+			, new Frame("images/scarab/g-5.png", 160, 356, 1)
+			, new Frame("images/scarab/g-2.png", 160, 356, 1)
+			, new Frame("images/scarab/g-4.png", 160, 356, 1)
+			]);
+	}
+
+	function update(inputManager, events) {
+		this.cobra.update();
+		this.mummy.update();
+		this.scarab.update();
+		this.mousePos = inputManager.getMousePosition();
+	}
+
+	function render() {
+		Graphics2D.Draw.fill(128, 96, 32);
+
+		// Draw board.
+		for (row = 0; row <= BOARD_ROW_COUNT; ++row) {
+			start = boardRowColToXY(row, 0);
+			end = boardRowColToXY(row, BOARD_COL_COUNT);
+			Graphics2D.Draw.line
+				( start[0], start[1]
+				, end[0], end[1]
+				, BOARD_LINE_WIDTH
+				, 0, 0, 0
+				);
+		}
+		for (col = 0; col <= BOARD_COL_COUNT; ++col) {
+			start = boardRowColToXY(0, col);
+			end = boardRowColToXY(BOARD_ROW_COUNT, col);
+			Graphics2D.Draw.line
+				( start[0], start[1]
+				, end[0], end[1]
+				, BOARD_LINE_WIDTH
+				, 0, 0, 0
+				);
+		}
+
+		pos = boardRowColToXY(0.5, 0.5);
+		Graphics2D.Draw.ellipse(pos[0] - 18, pos[1] - 5, 36, 10, 0, 0, 0, 128);
+		this.mummy.draw(pos[0], pos[1], 0.1, 0.1);
+
+		pos = boardRowColToXY(2.5, 2.5);
+		Graphics2D.Draw.ellipse(pos[0] - 35, pos[1] - 10, 70, 20, 0, 0, 0, 128);
+		this.mummy.draw(pos[0], pos[1], 0.2, 0.2);
+
+		pos = boardRowColToXY(1.5, 3.5);
+		Graphics2D.Draw.ellipse(pos[0] - 35, pos[1] - 10, 70, 20, 0, 0, 0, 128);
+		this.cobra.draw(pos[0], pos[1], 0.2, 0.2);
+
+		pos = boardRowColToXY(2.5, 5.5);
+		Graphics2D.Draw.ellipse(pos[0] - 35, pos[1] - 10, 70, 20, 0, 0, 0, 128);
+		this.scarab.draw(pos[0], pos[1], 0.2, 0.2);
+
+		// Draw cards.
+		for (i = 0; i < this.cards.length; ++i) {
+			this.cards[i].draw(10 + i * (CARD_WIDTH + 10), Y_RES - CARD_HEIGHT - 10);
+		}
+	}
+}

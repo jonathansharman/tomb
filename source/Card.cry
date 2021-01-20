@@ -1,0 +1,58 @@
+import Graphics2D;
+
+const CARD_WIDTH = 100.0;
+const CARD_HEIGHT = 100.0;
+const CARD_MARGIN_TOP = 4.0;
+const CARD_MARGIN_SIDE = 4.0;
+const CARD_WORD_SPACING = 4.0;
+const CARD_LINE_SKIP = 12.0;
+const CARD_BORDER = 1.0;
+
+class Card {
+	field words;
+
+	constructor(text) {
+		wordsText = split(text);
+		this.words = [];
+		for (wordText : wordsText) {
+			this.words.add(Fonts.card.render(wordText));
+		}
+	}
+
+	function draw(x, y) {
+		Graphics2D.Draw.rectangle(x, y, CARD_WIDTH, CARD_HEIGHT, 0, 0, 0);
+		Graphics2D.Draw.rectangle
+			( x + CARD_BORDER, y + CARD_BORDER
+			, CARD_WIDTH - 2.0 * CARD_BORDER
+			, CARD_HEIGHT - 2.0 * CARD_BORDER
+			, 255, 200, 100
+			);
+		cursor = [x + CARD_MARGIN_SIDE, y + CARD_MARGIN_TOP];
+		for (word : this.words) {
+			if (cursor[0] + word.width > x + CARD_WIDTH - CARD_MARGIN_SIDE) {
+				cursor[0] = x + CARD_MARGIN_SIDE;
+				cursor[1] += CARD_LINE_SKIP;
+			}
+			word.draw(cursor[0], cursor[1]);
+			cursor[0] += word.width + CARD_WORD_SPACING;
+		}
+	}
+}
+
+// Splits a string into a list of words separated by the given single-character delimiter.
+function split(text, delimiterCharacter = " ") {
+	words = [];
+	word = "";
+	for (c : text) {
+		if (c == delimiterCharacter) {
+			words.add(word);
+			word = "";
+		} else {
+			word += c;
+		}
+	}
+	if (word != "") {
+		words.add(word);
+	}
+	return words;
+}

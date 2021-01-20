@@ -1,0 +1,21 @@
+import Graphics2D;
+import Graphics2DText;
+import TwoCansAlpha4;
+
+class TitleScene : AbstractScene {
+	field title;
+
+	constructor() {
+		this.title = Fonts.title.render("TOMB");
+	}
+
+	function update(inputManager, events) {
+		if (inputManager.isKeyPressed(KeyboardKey.SPACE) || inputManager.isKeyPressed(KeyboardKey.ENTER)) {
+			this.switchScene(new MainScene());
+		}
+	}
+
+	function render() {
+		this.title.draw(0.5 * (X_RES - this.title.width), 0.5 * (Y_RES - this.title.height));
+	}
+}

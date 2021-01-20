@@ -1,0 +1,45 @@
+import Graphics2D;
+import TwoCansAlpha4;
+
+class Frame {
+	field image;
+	field xOrigin;
+	field yOrigin;
+	field duration;
+
+	constructor(source, xOrigin, yOrigin, duration) {
+		this.image = Images.get(source);
+		this.xOrigin = xOrigin;
+		this.yOrigin = yOrigin;
+		this.duration = duration;
+	}
+
+	function draw(x, y, xScale, yScale) {
+		this.image.drawStretched
+			( x - xScale * this.xOrigin, y - yScale * this.yOrigin
+			, xScale * this.image.width, yScale * this.image.height
+			);
+	}
+}
+
+class Animation {
+	field frames;
+	field frameIdx = 0;
+	field frameTime = 0;
+
+	constructor(frames) {
+		this.frames = frames;
+	}
+
+	function update() {
+		++this.frameTime;
+		if (this.frameTime == this.frames[this.frameIdx].duration) {
+			this.frameTime = 0;
+			this.frameIdx = (this.frameIdx + 1) % this.frames.length;
+		}
+	}
+
+	function draw(x, y, xScale = 1.0, yScale = 1.0) {
+		this.frames[this.frameIdx].draw(x, y, xScale, yScale);
+	}
+}

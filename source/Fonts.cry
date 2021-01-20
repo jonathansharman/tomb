@@ -1,0 +1,14 @@
+import Graphics2DText;
+
+class Fonts {
+	static field title = FontResource
+		.fromResource("fonts/VTCGoblinHand.ttf")
+		.getRenderer()
+		.setSize(48)
+		.setColor(255, 255, 255);
+	static field card = FontResource
+		.fromResource("fonts/Lato-Bold.ttf")
+		.getRenderer()
+		.setSize(9)
+		.setColor(0, 0, 0);
+}
