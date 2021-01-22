@@ -10,13 +10,15 @@ const CARD_BORDER = 1.0;
 
 class Card {
 	field words;
+	field effect;
 
-	constructor(text) {
+	constructor(text, effect) {
 		wordsText = split(text);
 		this.words = [];
 		for (wordText : wordsText) {
 			this.words.add(Fonts.card.render(wordText));
 		}
+		this.effect = effect;
 	}
 
 	function draw(x, y) {
