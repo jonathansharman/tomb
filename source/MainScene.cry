@@ -8,6 +8,11 @@ import TwoCansAlpha4;
 const X_RES = $var["screen_width"];
 const Y_RES = $var["screen_height"];
 
+const STARTING_LIFE = 10;
+const LIFE_MARGIN_LEFT = 10.0;
+const LIFE_MARGIN_BETWEEN = 10.0;
+const LIFE_MARGIN_TOP = 10.0;
+
 const BOARD_LINE_WIDTH = 2.0;
 const BOARD_ROW_COUNT = 3;
 const BOARD_COL_COUNT = 8;
@@ -57,9 +62,12 @@ enum State
 	}
 
 class MainScene : AbstractScene {
+	static field ankhImage = Images.get("images/ankh.png");
+
 	field state = State.PLAYER_TURN;
 	field turnTransitionProgress;
 
+	field life = STARTING_LIFE;
 	field board;
 	field hand;
 	field pass = false;
@@ -175,6 +183,12 @@ class MainScene : AbstractScene {
 			case State.TURN_TRANSITION:
 				++this.turnTransitionProgress;
 				if (this.turnTransitionProgress == TURN_TRANSITION_DURATION) {
+					// Deal damage based on monsters in the first column.
+					for (row = 0; row < BOARD_ROW_COUNT && this.life > 0; ++row) {
+						if (this.board[row][0] != null) {
+							--this.life;
+						}
+					}
 					// Shuffle monsters to the left.
 					for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 						for (col = 0; col < BOARD_COL_COUNT - 1; ++col) {
@@ -231,6 +245,14 @@ class MainScene : AbstractScene {
 					monster.animation.draw(pos[0], pos[1], 0.1, 0.1);
 				}
 			}
+		}
+
+		// Draw life.
+		for (i = 0; i < this.life; ++i) {
+			MainScene.ankhImage.draw
+				( LIFE_MARGIN_LEFT + i * (MainScene.ankhImage.width + LIFE_MARGIN_BETWEEN)
+				, LIFE_MARGIN_TOP
+				);
 		}
 
 		// Draw hand.
