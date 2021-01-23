@@ -13,9 +13,9 @@ const LIFE_MARGIN_LEFT = 10.0;
 const LIFE_MARGIN_BETWEEN = 10.0;
 const LIFE_MARGIN_TOP = 10.0;
 
-const BOARD_LINE_WIDTH = 2.0;
 const BOARD_ROW_COUNT = 3;
-const BOARD_COL_COUNT = 8;
+const BOARD_COL_COUNT = 10;
+const BOARD_LINE_WIDTH = 2.0;
 const BOARD_TOP_LEFT_X = 125;
 const BOARD_TOP_LEFT_Y = 200;
 const BOARD_TOP_RIGHT_X = 675;
@@ -30,14 +30,6 @@ const HAND_MARGIN_BOTTOM = 10.0;
 const HAND_MARGIN_BETWEEN = 10.0;
 
 const TURN_TRANSITION_DURATION = 20;
-
-function drawCentered(image, x, y) {
-	image.draw(x - 0.5 * image.width, y - 0.5 * image.height);
-}
-
-function lerp(p1, p2, t) {
-	return [p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1])];
-}
 
 // Maps board coordinates to screen coordinates.
 function boardRowColToXY(row, col) {
@@ -138,6 +130,11 @@ class MainScene : AbstractScene {
 						this.board[row][col] = null;
 					}
 				}
+			}
+		}));
+		this.hand.add(new Card("Last Defense. Destroy monsters in the left-most column.", () => {
+			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+				this.board[row][0] = null;
 			}
 		}));
 	}

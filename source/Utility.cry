@@ -1,0 +1,39 @@
+import Graphics2D;
+
+function lerp(p1, p2, t) {
+	return [p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1])];
+}
+
+function drawCentered(image, x, y) {
+	image.draw(x - 0.5 * image.width, y - 0.5 * image.height);
+}
+
+function drawRoundedRectangle(x, y, width, height, radius, color) {
+	r = color[0];
+	g = color[1];
+	b = color[2];
+	Graphics2D.Draw.ellipse(x, y, 2.0 * radius, 2.0 * radius, r, g, b);
+	Graphics2D.Draw.ellipse(x + width - 2.0 * radius, y, 2.0 * radius, 2.0 * radius, r, g, b);
+	Graphics2D.Draw.ellipse(x, y + height - 2.0 * radius, 2.0 * radius, 2.0 * radius, r, g, b);
+	Graphics2D.Draw.ellipse(x + width - 2.0 * radius, y + height - 2.0 * radius, 2.0 * radius, 2.0 * radius, r, g, b);
+	Graphics2D.Draw.rectangle
+		( x, y + radius
+		, width, height - 2.0 * radius
+		, r, g, b
+		);
+	Graphics2D.Draw.rectangle
+		( x + radius, y
+		, width - 2.0 * radius, height
+		, r, g, b
+		);
+}
+
+function drawBorderedRoundedRectangle(x, y, width, height, radius, backgroundColor, borderWidth, borderColor) {
+	drawRoundedRectangle(x, y, width, height, radius, borderColor);
+	drawRoundedRectangle
+		( x + borderWidth, y + borderWidth
+		, width - 2.0 * borderWidth, height - 2.0 * borderWidth
+		, radius - borderWidth
+		, backgroundColor
+		);
+}
