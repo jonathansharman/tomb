@@ -34,6 +34,7 @@ const PASS_BUTTON_Y = 60.0;
 
 const REFRESH_BUTTON_X = 10.0;
 const REFRESH_BUTTON_Y = 120.0;
+const REFRESH_CARD_COUNT = 4;
 
 const TURN_TRANSITION_DURATION = 20;
 
@@ -70,6 +71,8 @@ class MainScene : AbstractScene {
 	field life = STARTING_LIFE;
 	field board;
 	field hand;
+	field drawPile;
+	field discardPile;
 	field pass = false;
 
 	constructor() {
@@ -80,7 +83,11 @@ class MainScene : AbstractScene {
 		}
 		// Initialize hand.
 		this.hand = [];
-		this.hand.add(new Card("Destroy all cobras.", () => {
+		// Initialize discard pile.
+		this.discardPile = [];
+		// Initialize draw pile.
+		this.drawPile = [];
+		this.drawPile.add(new Card("Destroy all cobras.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				for (col = 0; col < BOARD_COL_COUNT; ++col) {
 					monster = this.board[row][col];
@@ -90,7 +97,7 @@ class MainScene : AbstractScene {
 				}
 			}
 		}));
-		this.hand.add(new Card("Destroy all mummies.", () => {
+		this.drawPile.add(new Card("Destroy all mummies.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				for (col = 0; col < BOARD_COL_COUNT; ++col) {
 					monster = this.board[row][col];
@@ -100,7 +107,7 @@ class MainScene : AbstractScene {
 				}
 			}
 		}));
-		this.hand.add(new Card("Destroy all scarabs.", () => {
+		this.drawPile.add(new Card("Destroy all scarabs.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				for (col = 0; col < BOARD_COL_COUNT; ++col) {
 					monster = this.board[row][col];
@@ -110,7 +117,7 @@ class MainScene : AbstractScene {
 				}
 			}
 		}));
-		this.hand.add(new Card("Destroy all red monsters.", () => {
+		this.drawPile.add(new Card("Destroy all red monsters.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				for (col = 0; col < BOARD_COL_COUNT; ++col) {
 					monster = this.board[row][col];
@@ -120,7 +127,7 @@ class MainScene : AbstractScene {
 				}
 			}
 		}));
-		this.hand.add(new Card("Destroy all green monsters.", () => {
+		this.drawPile.add(new Card("Destroy all green monsters.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				for (col = 0; col < BOARD_COL_COUNT; ++col) {
 					monster = this.board[row][col];
@@ -130,7 +137,7 @@ class MainScene : AbstractScene {
 				}
 			}
 		}));
-		this.hand.add(new Card("Destroy all yellow monsters.", () => {
+		this.drawPile.add(new Card("Destroy all yellow monsters.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				for (col = 0; col < BOARD_COL_COUNT; ++col) {
 					monster = this.board[row][col];
@@ -140,7 +147,7 @@ class MainScene : AbstractScene {
 				}
 			}
 		}));
-		this.hand.add(new Card("Last Defense. Destroy monsters in the left-most column.", () => {
+		this.drawPile.add(new Card("Last Defense. Destroy monsters in the left-most column.", () => {
 			for (row = 0; row < BOARD_ROW_COUNT; ++row) {
 				this.board[row][0] = null;
 			}
@@ -179,8 +186,12 @@ class MainScene : AbstractScene {
 					, CARD_HEIGHT
 					);
 				if (cardClicked) {
+					// Apply the card's effect.
 					this.hand[i].effect();
+					// Move the card to the discard pile.
+					this.discardPile.add(this.hand[i]);
 					this.hand.remove(i);
+					// Pass.
 					this.pass = true;
 					break;
 				}
@@ -193,7 +204,15 @@ class MainScene : AbstractScene {
 				, MainScene.refreshImage.height
 				);
 			if (refreshClicked) {
+				// Discard the current hand.
+				this.discardPile.concat(this.hand);
 				this.hand = [];
+				// Draw replacement cards.
+				for (i = 0; i < REFRESH_CARD_COUNT && this.drawPile.length > 0; ++i) {
+					this.hand.add(this.drawPile[0]);
+					this.drawPile.remove(0);
+				}
+				// Pass.
 				this.pass = true;
 			}
 			// Pass turn.
