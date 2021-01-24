@@ -29,6 +29,12 @@ const HAND_MARGIN_LEFT = 10.0;
 const HAND_MARGIN_BOTTOM = 10.0;
 const HAND_MARGIN_BETWEEN = 10.0;
 
+const PASS_BUTTON_X = 10.0;
+const PASS_BUTTON_Y = 60.0;
+
+const REFRESH_BUTTON_X = 10.0;
+const REFRESH_BUTTON_Y = 120.0;
+
 const TURN_TRANSITION_DURATION = 20;
 
 // Maps board coordinates to screen coordinates.
@@ -55,6 +61,8 @@ enum State
 
 class MainScene : AbstractScene {
 	static field ankhImage = Images.get("images/ankh.png");
+	static field passImage = Images.get("images/pass.png");
+	static field refreshImage = Images.get("images/refresh.png");
 
 	field state = State.PLAYER_TURN;
 	field turnTransitionProgress;
@@ -150,56 +158,73 @@ class MainScene : AbstractScene {
 			}
 		}
 		// Buffer pass turn.
-		if (inputManager.isKeyPressedThisFrame(KeyboardKey.ENTER)) {
+		passClicked = inputManager.didMouseClickHere
+			( PASS_BUTTON_X
+			, PASS_BUTTON_Y
+			, MainScene.passImage.width
+			, MainScene.passImage.height
+			);
+		if (passClicked) {
 			this.pass = true;
 		}
-		switch (this.state) {
-			case State.PLAYER_TURN:
-				// Play card.
-				for (i = 0; i < this.hand.length; ++i) {
-					cardClicked = inputManager.didMouseClickHere
-						( HAND_MARGIN_LEFT + i * (CARD_WIDTH + HAND_MARGIN_BETWEEN)
-						, Y_RES - HAND_MARGIN_BOTTOM - CARD_HEIGHT
-						, CARD_WIDTH
-						, CARD_HEIGHT
-						);
-					if (cardClicked) {
-						this.hand[i].effect();
-						this.hand.remove(i);
-						this.pass = true;
-						break;
+		// Use ifs instead of a switch here so that the turn transition state can make progress
+		// as soon as the turn is passed.
+		if (this.state == State.PLAYER_TURN) {
+			// Play card.
+			for (i = 0; i < this.hand.length; ++i) {
+				cardClicked = inputManager.didMouseClickHere
+					( HAND_MARGIN_LEFT + i * (CARD_WIDTH + HAND_MARGIN_BETWEEN)
+					, Y_RES - HAND_MARGIN_BOTTOM - CARD_HEIGHT
+					, CARD_WIDTH
+					, CARD_HEIGHT
+					);
+				if (cardClicked) {
+					this.hand[i].effect();
+					this.hand.remove(i);
+					this.pass = true;
+					break;
+				}
+			}
+			// Refresh.
+			refreshClicked = inputManager.didMouseClickHere
+				( REFRESH_BUTTON_X
+				, REFRESH_BUTTON_Y
+				, MainScene.refreshImage.width
+				, MainScene.refreshImage.height
+				);
+			if (refreshClicked) {
+				this.hand = [];
+				this.pass = true;
+			}
+			// Pass turn.
+			if (this.pass) {
+				this.pass = false;
+				this.turnTransitionProgress = 0;
+				this.state = State.TURN_TRANSITION;
+			}
+		}
+		if (this.state == State.TURN_TRANSITION) {
+			++this.turnTransitionProgress;
+			if (this.turnTransitionProgress == TURN_TRANSITION_DURATION) {
+				// Deal damage based on monsters in the first column.
+				for (row = 0; row < BOARD_ROW_COUNT && this.life > 0; ++row) {
+					if (this.board[row][0] != null) {
+						--this.life;
 					}
 				}
-				// Pass turn.
-				if (this.pass) {
-					this.pass = false;
-					this.turnTransitionProgress = 0;
-					this.state = State.TURN_TRANSITION;
+				// Shuffle monsters to the left.
+				for (row = 0; row < BOARD_ROW_COUNT; ++row) {
+					for (col = 0; col < BOARD_COL_COUNT - 1; ++col) {
+						this.board[row][col] = this.board[row][col + 1];
+					}
 				}
-				break;
-			case State.TURN_TRANSITION:
-				++this.turnTransitionProgress;
-				if (this.turnTransitionProgress == TURN_TRANSITION_DURATION) {
-					// Deal damage based on monsters in the first column.
-					for (row = 0; row < BOARD_ROW_COUNT && this.life > 0; ++row) {
-						if (this.board[row][0] != null) {
-							--this.life;
-						}
-					}
-					// Shuffle monsters to the left.
-					for (row = 0; row < BOARD_ROW_COUNT; ++row) {
-						for (col = 0; col < BOARD_COL_COUNT - 1; ++col) {
-							this.board[row][col] = this.board[row][col + 1];
-						}
-					}
-					// Spawn new monsters in the last column.
-					for (row : this.board) {
-						row[-1] = Monster.spawn();
-					}
-					// Switch back to player control.
-					this.state = State.PLAYER_TURN;
+				// Spawn new monsters in the last column.
+				for (row : this.board) {
+					row[-1] = Monster.spawn();
 				}
-				break;
+				// Switch back to player control.
+				this.state = State.PLAYER_TURN;
+			}
 		}
 	}
 
@@ -265,6 +290,12 @@ class MainScene : AbstractScene {
 				}
 			}
 		}
+
+		// Draw pass button.
+		MainScene.passImage.draw(PASS_BUTTON_X, PASS_BUTTON_Y);
+
+		// Draw refresh button.
+		MainScene.refreshImage.draw(REFRESH_BUTTON_X, REFRESH_BUTTON_Y);
 
 		// Draw hand.
 		for (i = 0; i < this.hand.length; ++i) {
